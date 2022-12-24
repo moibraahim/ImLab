@@ -31,17 +31,30 @@ class GUI(Frame):
         window.mainloop()
 
     def MedianFilter(self):
-        img = cv2.imread("im.jpg", 0)
-        k_W = 3
-        k_h = 3
+        NoisyImage = cv2.imread("Images/MedianFilter.jpg",0)
+        m, n = NoisyImage.shape[0], NoisyImage.shape[1]
+        ResultImage = np.zeros([m, n])
 
-        img_w = img.shape[0]
-        img_h = img.shape[1]
+        for i in range(1, m - 1):
 
-        for i in range(0, img_w):
-            for j in range(0, img_h):
-                img[i, j] = 255 - img[i, j]
-        cv2.imshow("result",img)
+            for j in range(1, n - 1):
+                ## Getting Every Value in the 3x3 matrix
+                temp = [NoisyImage[i - 1, j - 1], NoisyImage[i - 1, j], NoisyImage[i - 1, j + 1], NoisyImage[i, j - 1],
+                        NoisyImage[i, j],
+                        NoisyImage[i, j + 1],
+                        NoisyImage[i + 1, j - 1],
+                        NoisyImage[i + 1, j],
+                        NoisyImage[i + 1, j + 1]]
+
+                temp = sorted(temp)
+                ## Update the value of the current pixel with the median in the 4th position
+                ResultImage[i, j] = temp[4]
+
+        ## Casting the array to 8 bit integer
+        ResultImage = ResultImage.astype(np.uint8)
+        ResultImage = cv2.resize(ResultImage, (960, 540))
+        cv2.imshow('Result of median filter', ResultImage)
+
 
     def LoadMainPage(self):
         window.geometry("1593x1024")
