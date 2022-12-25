@@ -1,3 +1,5 @@
+import math
+import random
 from tkinter import *
 from tkinter import filedialog
 from PIL import Image, ImageTk
@@ -5,6 +7,8 @@ import numpy as np
 import cv2
 from tkinter import filedialog
 from tkinter.filedialog import askopenfile
+import matplotlib.pyplot as plt
+
 
 
 
@@ -85,7 +89,49 @@ class GUI(Frame):
         noisy_image = cv2.add(OriginalImage, gaussian)
         cv2.imshow("Gaussian Noise Result ", noisy_image)
 
+    def Sobel(self):
+        img = cv2.imread("Images/Flower.jpg", 0)
+        img_width = img.shape[0]
+        img_height = img.shape[1]
+        k_W = 3
+        k_h = 3
 
+        ky = np.matrix([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+        kx = np.matrix([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+
+        img_w = img.shape[0]
+        img_h = img.shape[1]
+
+        pad = np.zeros((img_w + k_W // 2, img_h + k_h // 2))
+        pad[k_W // 2: img_w + k_W, k_h // 2: img_h + k_h] = img.copy()
+
+        new_image = np.zeros((img_w, img_h))
+        new_image2 = np.zeros((img_w, img_h))
+        final_image = np.zeros((img_w, img_h))
+
+        for i in range(0, pad.shape[0] - (k_W + 1)):
+            for j in range(0, pad.shape[1] - (k_h + 1)):
+                matrix = pad[i: i + k_W, j: j + k_h]
+                new_image[i, j] = np.sum(np.multiply(ky, matrix))
+                new_image2[i, j] = np.sum(np.multiply(kx, matrix))
+                final_image[i, j] = math.sqrt(
+                    (new_image[i, j] * new_image[i, j]) + (new_image2[i, j] * new_image2[i, j]))
+
+        cv2.imshow("Result", final_image)
+
+    def GaussianFilter(self):
+        img = cv2.imread("Images/GaussianImage.jpg", 0)
+        img_out = np.zeros((img.shape))
+        kernel = np.array([[1 / 16, 1 / 8, 1 / 16], [1 / 8, 1 / 4, 1 / 8], [1 / 16, 1 / 8, 1 / 16]])
+        ksize = 3
+        for y in range(ksize // 2, img.shape[0] - ksize // 2):
+            for x in range(ksize // 2, img.shape[1] - ksize // 2):
+                region = img[y - ksize // 2:y + ksize // 2 + 1, x - ksize // 2:x + ksize // 2 + 1]
+                for k in range(ksize):
+                    for p in range(ksize):
+                        img_out[y, x] += region[k, p] * kernel[k, p]
+
+        cv2.imshow("Result", img_out)
 
     def LoadMainPage(self):
         window.geometry("1593x1024")
@@ -187,7 +233,7 @@ class GUI(Frame):
             image=img6,
             borderwidth=0,
             highlightthickness=0,
-            command=self.btn_clicked,
+            command=self.GaussianFilter,
             relief="flat")
 
         b6.place(
@@ -343,7 +389,7 @@ class GUI(Frame):
             image=img18,
             borderwidth=0,
             highlightthickness=0,
-            command=self.btn_clicked,
+            command=self.Sobel,
             relief="flat")
 
         b18.place(
