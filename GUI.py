@@ -10,8 +10,10 @@ from tkinter.filedialog import askopenfile
 
 class GUI(Frame):
 
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
+
 
         self.LoadWelcomePage()
     def btn_clicked(self):
@@ -54,6 +56,35 @@ class GUI(Frame):
         ResultImage = ResultImage.astype(np.uint8)
         ResultImage = cv2.resize(ResultImage, (960, 540))
         cv2.imshow('Result of median filter', ResultImage)
+
+    def UnsharpMaskAndHighBoost(self):
+
+        ## m(x,y) = f(x,y) - fb(x,y)
+        ## multiply k with m(x,y)
+
+        OriginalImage = cv2.imread("Images/standard.jpg", 0)
+        img = OriginalImage.reshape(OriginalImage.shape[0], OriginalImage.shape[1], 1)
+        ## Blur the Image using Gaussian blur to substract the original image from it
+        blur = cv2.GaussianBlur(img, (5, 5), 0)
+        blur = blur.reshape(blur.shape[0], blur.shape[1], 1)
+        ## subtract the original image from blur mask
+        mask = img - blur
+        ## if k = 1 then unsharp
+        ## if k > 1 Highboost
+        k = 1
+        final = img + k * mask
+        cv2.imshow("Result of Unsharp and HighBosst", final)
+
+    def GaussianNoise(self):
+        OriginalImage = cv2.imread("Images/GaussianImage.jpg", 0)
+        ## Geneate Random Points from Gaussian Distrbution
+        gaussian = np.random.normal(loc=0, scale=1, size=OriginalImage.size)
+        ## Reshape the Array
+        gaussian = gaussian.reshape(OriginalImage.shape[0], OriginalImage.shape[1]).astype('uint8')
+        ## Add Noise to the Image
+        noisy_image = cv2.add(OriginalImage, gaussian)
+        cv2.imshow("Gaussian Noise Result ", noisy_image)
+
 
 
     def LoadMainPage(self):
@@ -130,7 +161,7 @@ class GUI(Frame):
             image=img4,
             borderwidth=0,
             highlightthickness=0,
-            command=self.btn_clicked,
+            command=self.GaussianNoise,
             relief="flat")
 
         b4.place(
@@ -286,7 +317,7 @@ class GUI(Frame):
             image=img16,
             borderwidth=0,
             highlightthickness=0,
-            command=self.btn_clicked,
+            command=self.UnsharpMaskAndHighBoost,
             relief="flat")
 
         b16.place(
@@ -350,10 +381,12 @@ class GUI(Frame):
         window.mainloop()
 
     def choose(self):
+
         global InputImage
         f_types = [('Jpg Files', '*.jpg')]
         filename = filedialog.askopenfilename(filetypes=f_types)
         InputImage = Image.open(filename)
+
         img_resized =  InputImage.resize((900, 540))  # new width & height
         InputImage = ImageTk.PhotoImage(img_resized)
         b2 = Button(window, image= InputImage)  # using Button
